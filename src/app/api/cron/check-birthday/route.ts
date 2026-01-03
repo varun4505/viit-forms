@@ -3,12 +3,6 @@ import dbConnect from "@/lib/dbConnect";
 import Member from "@/models/Members";
 import { sendBirthdayEmail, sendBoardNotification } from "@/lib/mail";
 
-interface MemberType {
-  name: string;
-  email: string;
-  birthdate: string;
-}
-
 export async function POST(req: NextRequest) {
   if (req.headers.get("x-cron-secret") !== process.env.CRON_SECRET) {
     return NextResponse.json(
@@ -20,26 +14,38 @@ export async function POST(req: NextRequest) {
   try {
     await dbConnect();
 
-    // Get current date (UTC)
     const today = new Date();
-    const month = today.getUTCMonth() + 1;
-    const day = today.getUTCDate();
+    const month = today.getUTCMonth() + 1; 
+    const day = today.getUTCDate();        
 
-    const birthdayMembers: MemberType[] = await Member.find({});
-
-    const todaysBirthdays = birthdayMembers.filter((member) => {
-      const birthDate = new Date(member.birthdate);
-      return birthDate.getUTCMonth() + 1 === month && birthDate.getUTCDate() === day;
+    const todaysBirthdays = await Member.find({
+      $expr: {
+        $and: [
+          { $eq: [{ $month: "$personalInfo.dob" }, month] },
+          { $eq: [{ $dayOfMonth: "$personalInfo.dob" }, day] }
+        ]
+      }
     });
 
     console.log(`Found ${todaysBirthdays.length} birthdays today`);
 
     const emailResults = await Promise.all(
-      todaysBirthdays.map(async (member) => ({
-        name: member.name,
-        memberEmailSent: await sendBirthdayEmail(member),
-        boardEmailSent: await sendBoardNotification(member),
-      }))
+      todaysBirthdays.map(async (member) => {
+        // TWEAK: Pass all details required by the updated mail.ts
+        const emailData = {
+            name: member.personalInfo.name,
+            email: member.personalInfo.vitEmail,
+            phoneNumber: member.personalInfo.phoneNumber,
+            regNumber: member.personalInfo.regNumber,
+            birthdate: member.personalInfo.dob
+        };
+        
+        return {
+            name: member.personalInfo.name,
+            memberEmailSent: await sendBirthdayEmail(emailData),
+            boardEmailSent: await sendBoardNotification(emailData),
+        };
+      })
     );
 
     return NextResponse.json({

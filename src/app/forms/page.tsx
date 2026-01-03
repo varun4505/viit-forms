@@ -35,7 +35,7 @@ export default function FormsPage() {
     phoneNumber: "",
     branchSpecialization: "",
     gender: "",
-    dob: "", // Added DOB state
+    dob: "",
     vitEmail: "",
     personalEmail: "",
     otherOrganizations: "None",
@@ -73,7 +73,6 @@ export default function FormsPage() {
     setIsLoaded(true);
   }, []);
 
-  // Auto-save logic
   useEffect(() => {
     if (isLoaded) {
       const t = setTimeout(() => {
@@ -131,7 +130,7 @@ export default function FormsPage() {
     }
 
     if (!formData.gender) newErrors.gender = "Gender is required";
-    if (!formData.dob) newErrors.dob = "Date of Birth is required"; // Added validation
+    if (!formData.dob) newErrors.dob = "Date of Birth is required";
 
     if (!formData.branchSpecialization.trim())
       newErrors.branchSpecialization = "Branch is required";
@@ -199,67 +198,23 @@ export default function FormsPage() {
       personalInfo: {
         name: formData.name,
         regNumber: formData.regNumber.toUpperCase(),
-        yearOfStudy: "1st Year",
         phoneNumber: formData.phoneNumber,
         branchSpecialization: formData.branchSpecialization,
         gender: formData.gender,
-        dob: formData.dob, // Added DOB payload
+        dob: formData.dob,
         vitEmail: formData.vitEmail.toLowerCase(),
         personalEmail: formData.personalEmail.toLowerCase(),
-        domain: formData.domain,
-        additionalDomains: formData.subDomain,
-        joinMonth: "January",
         otherOrganizations: formData.otherOrganizations,
-        cgpa: "0",
       },
-      journey: {
+      domainInfo: {
+        domain: formData.domain,
+        subDomain: formData.subDomain,
         projects: formData.projects,
-        contribution: "New Recruit",
-        events: "N/A",
-        skillsLearned: "N/A",
-        overallContribution: 1,
-        techContribution: 1,
-        managementContribution: 1,
-        designContribution: 1,
-        challenges: "N/A",
-        howChanged: "N/A",
       },
-      teamBonding: {
-        memberBonding: 1,
-        likelyToSeekHelp: 1,
-        clubEnvironment: "N/A",
-        likedCharacteristics: "N/A",
-        dislikedCharacteristics: "N/A",
-        favoriteTeammates: "N/A",
-        favoriteTeammatesTraits: "N/A",
-        improvementSuggestions: "N/A",
-      },
-      future: {
-        commitmentRating: formData.commitment,
+      commitmentInfo: {
+        likedSenior: formData.likedSenior,
+        commitment: formData.commitment,
         commitmentJustification: formData.commitmentJustification,
-        domainsToExplore: formData.domain,
-        whyJoinedVinnovateIT: "New Recruit",
-        skillsToLearn: "N/A",
-        wishlistFulfillment: "N/A",
-        leadershipPreference: "None",
-        immediateChanges: "N/A",
-        upcomingYearChanges: "N/A",
-        preferredFellowLeaders: "N/A",
-      },
-      boardReview: {
-        mostEffectiveBoardMember: formData.likedSenior,
-        overallBoardPerformance: 1,
-        boardCommunication: 1,
-        boardAccessibility: 1,
-        boardDecisionMaking: 1,
-        boardImprovementSuggestions: "N/A",
-        boardAppreciation: "N/A",
-      },
-      generalFeedback: {
-        additionalComments: "New Recruit Profile",
-        overallClubExperience: 1,
-        recommendToOthers: 1,
-        anonymousFeedback: "N/A",
       },
     };
 
@@ -380,7 +335,6 @@ export default function FormsPage() {
                   options={["Male", "Female", "Other"]}
                   error={errors.gender}
                 />
-                {/* Added DOB Field here */}
                 <InputField
                   id="dob"
                   label="Date of Birth"

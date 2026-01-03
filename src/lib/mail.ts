@@ -4,8 +4,8 @@ interface Member {
   name: string;
   email: string;
   phoneNumber?: string;
-  regNo?: string;
-  quirkyDetail?: string;
+  regNumber?: string;
+  birthdate?: Date;
 }
 
 // Configure mail transporter
@@ -70,8 +70,7 @@ export async function sendBoardNotification(member: Member): Promise<boolean> {
           <li><strong>Name:</strong> ${member.name}</li>
           <li><strong>Email:</strong> ${member.email}</li>
           <li><strong>Phone:</strong> ${member.phoneNumber || "N/A"}</li>
-          <li><strong>Registration No:</strong> ${member.regNo || "N/A"}</li>
-          <li><strong>Quirky Detail:</strong> ${member.quirkyDetail || "N/A"}</li>
+          <li><strong>Registration No:</strong> ${member.regNumber || "N/A"}</li>
         </ul>
         <p style="font-size: 16px; line-height: 1.5;">Don't forget to wish them a happy birthday!</p>
         <p style="font-size: 14px; color: #666; margin-top: 20px;">This is an automated message from the Core Team Member Management System.</p>
