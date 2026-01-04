@@ -9,7 +9,7 @@ interface IPersonalInfo {
   dob: Date;
   vitEmail: string;
   personalEmail: string;
-  otherOrganizations: string;
+  cgpa: number; // <--- Changed from otherOrganizations
 }
 
 interface IDomainInfo {
@@ -66,12 +66,12 @@ const PersonalInfoSchema = new Schema<IPersonalInfo>({
     trim: true, 
     match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Invalid Personal Email']
   },
-  otherOrganizations: { type: String, required: true, trim: true }
+  cgpa: { type: Number, required: true, min: 0, max: 10 } // <--- Changed
 }, { _id: false });
 
 const DomainInfoSchema = new Schema<IDomainInfo>({
   domain: { type: String, required: true, trim: true },
-  subDomain: { type: String, trim: true }, // Optional depending on domain
+  subDomain: { type: String, trim: true }, 
   projects: { type: String, required: true, trim: true }
 }, { _id: false });
 
@@ -98,7 +98,6 @@ const FormSubmissionSchema = new Schema<IFormSubmission>({
   createdAt: { type: Date, default: Date.now }
 });
 
-// Indexes
 FormSubmissionSchema.index({ 'personalInfo.regNumber': 1 }, { unique: true });
 FormSubmissionSchema.index({ 'personalInfo.vitEmail': 1 });
 FormSubmissionSchema.index({ 'domainInfo.domain': 1 });

@@ -48,7 +48,11 @@ export default function SidePanel({ variant }: SidePanelProps) {
     : sectionContent[activeSection] || sectionContent.personal;
 
   return (
-    <div className="flex flex-col justify-center h-full p-8 md:p-12 lg:p-16 relative overflow-hidden">
+    <div
+      className={`flex flex-col justify-center h-full relative overflow-hidden ${
+        isHome ? "p-8 md:p-12 lg:p-16" : "p-6 md:p-12 lg:p-16"
+      }`}
+    >
       {/* Background Blob */}
       <div
         className={`${styles.blob} ${
@@ -56,23 +60,38 @@ export default function SidePanel({ variant }: SidePanelProps) {
         }`}
       />
 
-      {/* Logo */}
+      {/* Logo Area */}
       <div
-        className={`relative z-10 mb-20 transition-all duration-700 ease-in-out ${
-          isHome ? "scale-125 origin-center" : "scale-100 origin-left"
-        }`}
+        className={`relative z-10 transition-all duration-700 ease-in-out flex items-center
+          ${
+            isHome
+              ? "scale-125 origin-center mb-20 flex-col"
+              : "scale-100 origin-left mb-0 md:mb-20 flex-row gap-4"
+          }
+        `}
       >
         <img
           src="https://raw.githubusercontent.com/vinnovateit/.github/main/assets/whiteLogoViit.png"
           alt="VinnovateIT"
-          className={`h-auto opacity-90 ${isHome ? "w-48 mx-auto" : "w-32"}`}
+          className={`h-auto opacity-90 transition-all ${
+            isHome ? "w-48 mx-auto" : "w-16 md:w-32"
+          }`}
         />
+
+        {/* Static Title for Mobile Header (Only visible on Form page on Mobile) */}
+        {!isHome && (
+          <span className="md:hidden text-xl font-bold text-white tracking-wide">
+            Member Profile
+          </span>
+        )}
       </div>
 
-      {/* Dynamic Content */}
+      {/* Dynamic Content (Hidden on Mobile for Forms, Visible on Desktop) */}
       <div
         key={isHome ? "home" : activeSection}
-        className={`relative z-10 ${styles.animateSlideUp}`}
+        className={`relative z-10 ${styles.animateSlideUp} ${
+          !isHome ? "hidden md:block" : ""
+        }`}
       >
         {!isHome && (
           <div className="mb-6 inline-block p-4 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 shadow-xl">
@@ -117,7 +136,7 @@ export default function SidePanel({ variant }: SidePanelProps) {
       </div>
 
       {!isHome && (
-        <div className="mt-auto pt-12 flex items-center gap-3 text-sm text-neutral-600 font-medium tracking-widest uppercase">
+        <div className="hidden md:flex mt-auto pt-12 items-center gap-3 text-sm text-neutral-600 font-medium tracking-widest uppercase">
           <div className="h-px w-8 bg-neutral-700"></div>
           2025 Member Profile
         </div>

@@ -15,27 +15,31 @@ export default function ClientLayout({
 
   return (
     <FormProvider>
-      <div className="flex h-screen w-full bg-black overflow-hidden relative">
-        {/* --- LEFT PANEL (Persists & Animates) --- */}
+      <div className="flex flex-col md:flex-row h-screen w-full bg-black overflow-hidden relative">
+        {/* --- LEFT PANEL (Header on Mobile / SidePanel on Desktop) --- */}
         <div
           className={`
-            flex-shrink-0 h-full bg-neutral-900 border-r border-white/10 relative z-20
+            flex-shrink-0 bg-neutral-900 border-b md:border-b-0 md:border-r border-white/10 relative z-20 transition-all duration-700 ease-in-out
             ${styles.panelContainer}
-            ${isHome ? "w-full" : "w-full md:w-[40%] lg:w-[35%]"} 
+            ${
+              isHome
+                ? "w-full h-full"
+                : "w-full h-[100px] md:h-full md:w-[40%] lg:w-[35%]"
+            } 
           `}
         >
           <SidePanel variant={isHome ? "home" : "form"} />
         </div>
 
-        {/* --- RIGHT PANEL (Content) --- */}
+        {/* --- RIGHT PANEL (Content / Form) --- */}
         <div
           className={`
-            flex-grow h-full overflow-y-auto relative z-10 bg-black
+            flex-grow overflow-y-auto relative z-10 bg-black transition-all duration-700 ease-in-out
             ${styles.contentContainer}
             ${
               isHome
-                ? "opacity-0 translate-x-20 pointer-events-none w-0"
-                : "opacity-100 translate-x-0 w-full"
+                ? "h-0 w-full opacity-0 pointer-events-none"
+                : "h-full w-full opacity-100"
             }
           `}
         >
