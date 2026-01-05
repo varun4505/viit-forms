@@ -42,7 +42,7 @@ export default function SidePanel({ variant }: SidePanelProps) {
 
   const homeContent = {
     title: "VinnovateIT 2026",
-    desc: "Join the most innovative technical club at VIT. Update your profile to get started.",
+    desc: "Welcome to the most innovative technical club at VIT. There is just one thing left to do!",
     icon: (
       // eslint-disable-next-line @next/next/no-img-element
       <img

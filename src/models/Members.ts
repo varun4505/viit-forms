@@ -5,11 +5,13 @@ interface IPersonalInfo {
   regNumber: string;
   phoneNumber: string;
   branchSpecialization: string;
-  gender: 'Male' | 'Female';
+  gender: 'Male' | 'Female' | 'Other';
   dob: Date;
   vitEmail: string;
   personalEmail: string;
   cgpa: number;
+  hostelBlock: string;
+  hostelRoom: string;
 }
 
 interface IDomainInfo {
@@ -65,7 +67,18 @@ const PersonalInfoSchema = new Schema<IPersonalInfo>({
     trim: true, 
     match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Invalid Personal Email']
   },
-  cgpa: { type: Number, required: true, min: 0, max: 10 }
+  cgpa: { type: Number, required: true, min: 0, max: 10 },
+  hostelBlock: { 
+    type: String, 
+    required: true, 
+    uppercase: true, 
+    match: [/^[A-Z]$/, 'Block must be a single letter'] 
+  },
+  hostelRoom: { 
+    type: String, 
+    required: true, 
+    match: [/^[0-9]{1,4}$/, 'Invalid Room Number'] 
+  }
 }, { _id: false });
 
 const DomainInfoSchema = new Schema<IDomainInfo>({

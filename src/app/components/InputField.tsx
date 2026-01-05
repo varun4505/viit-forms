@@ -4,8 +4,9 @@ const InputField: React.FC<{
   id: string;
   label: string;
   type?: string;
-  value: string;
+  value: string | number;
   onChange: (value: string) => void;
+  onBlur?: () => void;
   required?: boolean;
   placeholder?: string;
   error?: string;
@@ -16,21 +17,26 @@ const InputField: React.FC<{
   type = "text",
   value,
   onChange,
+  onBlur,
   required = false,
   placeholder,
   error,
   options,
 }) => {
-  const baseClasses = "input-field";
-  const textareaClasses = "input-textarea";
+  // Changed border from default (1px) to border-2 (2px)
+  const baseClasses = "input-field border-2";
+  const textareaClasses = "input-textarea border-2";
 
-  const errorClasses = error ? "border-red-500" : "border-white/10";
+  // Error border vs Normal border
+  const errorClasses = error
+    ? "border-red-500"
+    : "border-white/10 focus:border-purple-500/50";
 
   if (type === "select" && options) {
     return (
-      <div className="mb-4 transform transition-all duration-300 hover:translate-x-1 group">
+      <div className="mb-4 w-full group">
         <label
-          className="block text-purple-300 text-sm font-bold mb-2"
+          className="block text-purple-300 text-sm font-bold mb-2 transition-colors group-hover:text-purple-200"
           htmlFor={id}
         >
           {label} {required && <span className="text-red-400">*</span>}
@@ -40,6 +46,7 @@ const InputField: React.FC<{
             id={id}
             value={value}
             onChange={(e) => onChange(e.target.value)}
+            onBlur={onBlur}
             required={required}
             className={`${baseClasses} ${errorClasses}`}
           >
@@ -66,18 +73,21 @@ const InputField: React.FC<{
               />
             </svg>
           </div>
-          <div className="absolute inset-0 border border-purple-500/0 rounded-full group-hover:border-purple-500/30 transition-all duration-300 pointer-events-none"></div>
         </div>
-        {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+        {error && (
+          <p className="text-red-400 text-xs mt-1 font-medium animate-pulse">
+            {error}
+          </p>
+        )}
       </div>
     );
   }
 
   if (type === "textarea") {
     return (
-      <div className="mb-4 transform transition-all duration-300 hover:translate-x-1 group">
+      <div className="mb-4 w-full group">
         <label
-          className="block text-purple-300 text-sm font-bold mb-2"
+          className="block text-purple-300 text-sm font-bold mb-2 transition-colors group-hover:text-purple-200"
           htmlFor={id}
         >
           {label} {required && <span className="text-red-400">*</span>}
@@ -87,22 +97,26 @@ const InputField: React.FC<{
             id={id}
             value={value}
             onChange={(e) => onChange(e.target.value)}
+            onBlur={onBlur}
             required={required}
             placeholder={placeholder}
             rows={4}
             className={`${textareaClasses} ${errorClasses}`}
           />
-          <div className="absolute inset-0 border border-purple-500/0 rounded-4xl group-hover:border-purple-500/30 transition-all duration-300 pointer-events-none"></div>
         </div>
-        {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+        {error && (
+          <p className="text-red-400 text-xs mt-1 font-medium animate-pulse">
+            {error}
+          </p>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="mb-4 transform transition-all duration-300 hover:translate-x-1 group">
+    <div className="mb-4 w-full group">
       <label
-        className="block text-purple-300 text-sm font-bold mb-2"
+        className="block text-purple-300 text-sm font-bold mb-2 transition-colors group-hover:text-purple-200"
         htmlFor={id}
       >
         {label} {required && <span className="text-red-400">*</span>}
@@ -113,13 +127,17 @@ const InputField: React.FC<{
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onBlur={onBlur}
           required={required}
           placeholder={placeholder}
           className={`${baseClasses} ${errorClasses}`}
         />
-        <div className="absolute inset-0 border border-purple-500/0 rounded-full group-hover:border-purple-500/30 transition-all duration-300 pointer-events-none"></div>
       </div>
-      {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+      {error && (
+        <p className="text-red-400 text-xs mt-1 font-medium animate-pulse">
+          {error}
+        </p>
+      )}
     </div>
   );
 };

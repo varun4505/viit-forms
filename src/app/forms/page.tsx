@@ -14,6 +14,8 @@ const REG_NUMBER_REGEX = /^(24|25)[A-Z]{3}[0-9]{4}$/i;
 const VIT_EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@vitstudent\.ac\.in$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^[0-9]{10}$/;
+const BLOCK_REGEX = /^[A-Z]$/;
+const ROOM_REGEX = /^[0-9]{1,4}$/;
 
 type SubmitStatus = "idle" | "submitting" | "success" | "error";
 
@@ -44,6 +46,8 @@ export default function FormsPage() {
     vitEmail: "",
     personalEmail: "",
     cgpa: "",
+    hostelBlock: "",
+    hostelRoom: "",
     domain: "",
     subDomain: "",
     projects: "",
@@ -103,102 +107,109 @@ export default function FormsPage() {
     return () => observer.disconnect();
   }, [setActiveSection]);
 
-  // --- Handlers ---
+  // --- Validation Logic ---
+
+  const validateField = (field: string, value: any): string | null => {
+    // 1. Check Required (Skip subDomain if not applicable)
+    if (!value || (typeof value === "string" && !value.trim())) {
+      if (field === "subDomain") {
+        const domainOpts =
+          domainOptionsMap[formData.domain as keyof typeof domainOptionsMap];
+        if (formData.domain && domainOpts?.length > 0)
+          return "Subdomain is required";
+        return null;
+      }
+      return "This field is required";
+    }
+
+    // 2. Specific Checks
+    switch (field) {
+      case "regNumber":
+        if (!REG_NUMBER_REGEX.test(value))
+          return "Must start with '24' or '25' (e.g., 25BCE...)";
+        break;
+      case "phoneNumber":
+        if (!PHONE_REGEX.test(value)) return "Must be exactly 10 digits";
+        break;
+      case "vitEmail":
+        if (!VIT_EMAIL_REGEX.test(value))
+          return "Must end with @vitstudent.ac.in";
+        break;
+      case "personalEmail":
+        if (!EMAIL_REGEX.test(value)) return "Invalid email format";
+        break;
+      case "dob":
+        const birthDate = new Date(value);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+        if (age < 13) return "You must be at least 13 years old";
+        break;
+      case "cgpa":
+        const cgpaRegex = /^([0-9]\.[0-9]{2}|10\.00)$/;
+        if (!cgpaRegex.test(value.toString()))
+          return "Format must be X.XX (e.g., 9.50)";
+        const val = parseFloat(value);
+        if (val < 0 || val > 10) return "CGPA cannot exceed 10";
+        break;
+      case "hostelBlock":
+        if (!BLOCK_REGEX.test(value))
+          return "Enter a single letter (e.g., 'A')";
+        break;
+      case "hostelRoom":
+        if (!ROOM_REGEX.test(value)) return "Max 4 digits allowed";
+        break;
+    }
+    return null;
+  };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) newErrors.name = "Full Name is required";
-
-    if (!formData.regNumber.trim()) {
-      newErrors.regNumber = "Registration Number is required";
-    } else if (!REG_NUMBER_REGEX.test(formData.regNumber)) {
-      newErrors.regNumber = "Must start with '24' or '25' (e.g., 24BCE...)";
-    }
-
-    if (!formData.phoneNumber.trim()) {
-      newErrors.phoneNumber = "Phone Number is required";
-    } else if (!PHONE_REGEX.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = "Must be exactly 10 digits";
-    }
-
-    if (!formData.vitEmail.trim()) {
-      newErrors.vitEmail = "VIT Email is required";
-    } else if (!VIT_EMAIL_REGEX.test(formData.vitEmail)) {
-      newErrors.vitEmail = "Must end with @vitstudent.ac.in";
-    }
-
-    if (!formData.personalEmail.trim()) {
-      newErrors.personalEmail = "Personal Email is required";
-    } else if (!EMAIL_REGEX.test(formData.personalEmail)) {
-      newErrors.personalEmail = "Invalid email format";
-    }
-
-    if (!formData.gender) newErrors.gender = "Gender is required";
-    if (!formData.dob) newErrors.dob = "Date of Birth is required";
-
-    if (!formData.branchSpecialization.trim())
-      newErrors.branchSpecialization = "Branch is required";
-
-    if (!formData.dob) {
-      newErrors.dob = "Date of Birth is required";
-    } else {
-      const birthDate = new Date(formData.dob);
-      const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const m = today.getMonth() - birthDate.getMonth();
-
-      // Adjust age if birthday hasn't happened yet this year
-      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
-
-      if (age < 13) {
-        newErrors.dob = "You are too young for the club.";
-      }
-    }
-
-    // CGPA Validation
-    if (!formData.cgpa.toString().trim()) {
-      newErrors.cgpa = "CGPA is required";
-    } else {
-      const cgpaRegex = /^([0-9]\.[0-9]{2}|10\.00)$/;
-      if (!cgpaRegex.test(formData.cgpa.toString())) {
-        newErrors.cgpa = "Format must be X.XX (e.g., 9.50)";
-      } else {
-        const val = parseFloat(formData.cgpa);
-        if (val < 0 || val > 10) {
-          newErrors.cgpa = "CGPA cannot exceed 10";
-        }
-      }
-    }
-
-    if (!formData.domain) newErrors.domain = "Domain is required";
-    if (
-      formData.domain &&
-      domainOptionsMap[formData.domain as keyof typeof domainOptionsMap]
-        ?.length > 0 &&
-      !formData.subDomain
-    ) {
-      newErrors.subDomain = "Subdomain is required";
-    }
-
-    if (!formData.projects.trim())
-      newErrors.projects = "Past Experience is required"; // Updated error message
-
-    // REMOVED: likedSenior validation
-
-    if (!formData.commitmentJustification.trim())
-      newErrors.commitmentJustification = "Justification is required";
+    // Validate all keys in formData
+    Object.keys(formData).forEach((key) => {
+      const error = validateField(key, formData[key as keyof typeof formData]);
+      if (error) newErrors[key] = error;
+    });
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleBlur = (field: string) => {
+    // Instant validation on blur
+    const error = validateField(
+      field,
+      formData[field as keyof typeof formData]
+    );
+    setErrors((prev) => {
+      const newErr = { ...prev };
+      if (error) {
+        newErr[field] = error;
+      } else {
+        delete newErr[field];
+      }
+      return newErr;
+    });
+  };
+
   const handleChange = (field: string, value: string | number) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    let processedValue = value;
+
+    if (field === "hostelBlock" && typeof value === "string") {
+      processedValue = value.toUpperCase().slice(0, 1);
+      if (processedValue && !/^[A-Z]$/.test(processedValue)) return;
+    }
+
+    if (field === "hostelRoom" && typeof value === "string") {
+      processedValue = value.replace(/[^0-9]/g, "").slice(0, 4);
+    }
+
+    setFormData((prev) => ({ ...prev, [field]: processedValue }));
     if (submitStatus === "error") setSubmitStatus("idle");
 
+    // Clear error immediately on change if user starts typing
     if (errors[field]) {
       setErrors((prev) => {
         const newErr = { ...prev };
@@ -210,14 +221,12 @@ export default function FormsPage() {
 
   const handleDomainChange = (value: string) => {
     setFormData((prev) => ({ ...prev, domain: value, subDomain: "" }));
-    if (errors.domain) {
-      setErrors((prev) => {
-        const newErr = { ...prev };
-        delete newErr.domain;
-        delete newErr.subDomain;
-        return newErr;
-      });
-    }
+    setErrors((prev) => {
+      const newErr = { ...prev };
+      delete newErr.domain;
+      delete newErr.subDomain;
+      return newErr;
+    });
   };
 
   const triggerErrorState = (msg: string) => {
@@ -248,6 +257,8 @@ export default function FormsPage() {
         vitEmail: formData.vitEmail.toLowerCase(),
         personalEmail: formData.personalEmail.toLowerCase(),
         cgpa: parseFloat(formData.cgpa),
+        hostelBlock: formData.hostelBlock,
+        hostelRoom: formData.hostelRoom,
       },
       domainInfo: {
         domain: formData.domain,
@@ -255,7 +266,6 @@ export default function FormsPage() {
         projects: formData.projects,
       },
       commitmentInfo: {
-        // REMOVED: likedSenior
         commitment: formData.commitment,
         commitmentJustification: formData.commitmentJustification,
       },
@@ -311,6 +321,12 @@ export default function FormsPage() {
     }
   };
 
+  const getHostelHeader = () => {
+    if (formData.gender === "Male") return "Men's Hostel Details";
+    if (formData.gender === "Female") return "Ladies' Hostel Details";
+    return "Hostel Details";
+  };
+
   return (
     <div className="w-full">
       <Toast show={toast.show} message={toast.message} type={toast.type} />
@@ -340,8 +356,9 @@ export default function FormsPage() {
                 label="Full Name"
                 value={formData.name}
                 onChange={(v) => handleChange("name", v)}
+                onBlur={() => handleBlur("name")}
                 required
-                placeholder="Your Name"
+                placeholder="John Doe"
                 error={errors.name}
               />
               <InputField
@@ -349,8 +366,9 @@ export default function FormsPage() {
                 label="Registration Number"
                 value={formData.regNumber}
                 onChange={(v) => handleChange("regNumber", v)}
+                onBlur={() => handleBlur("regNumber")}
                 required
-                placeholder="25BCE0001" // UPDATED PLACEHOLDER
+                placeholder="25BCE0001"
                 error={errors.regNumber}
               />
             </div>
@@ -363,8 +381,9 @@ export default function FormsPage() {
                 type="email"
                 value={formData.vitEmail}
                 onChange={(v) => handleChange("vitEmail", v)}
+                onBlur={() => handleBlur("vitEmail")}
                 required
-                placeholder="@vitstudent.ac.in"
+                placeholder="john.doe2025@vitstudent.ac.in"
                 error={errors.vitEmail}
               />
               <InputField
@@ -373,8 +392,9 @@ export default function FormsPage() {
                 type="email"
                 value={formData.personalEmail}
                 onChange={(v) => handleChange("personalEmail", v)}
+                onBlur={() => handleBlur("personalEmail")}
                 required
-                placeholder="@gmail.com"
+                placeholder="johndoe@gmail.com"
                 error={errors.personalEmail}
               />
             </div>
@@ -387,6 +407,7 @@ export default function FormsPage() {
                 type="tel"
                 value={formData.phoneNumber}
                 onChange={(v) => handleChange("phoneNumber", v)}
+                onBlur={() => handleBlur("phoneNumber")}
                 required
                 error={errors.phoneNumber}
               />
@@ -397,8 +418,9 @@ export default function FormsPage() {
                   type="select"
                   value={formData.gender}
                   onChange={(v) => handleChange("gender", v)}
+                  onBlur={() => handleBlur("gender")}
                   required
-                  options={["Male", "Female"]}
+                  options={["Male", "Female", "Other"]}
                   error={errors.gender}
                 />
                 <InputField
@@ -407,35 +429,70 @@ export default function FormsPage() {
                   type="date"
                   value={formData.dob}
                   onChange={(v) => handleChange("dob", v)}
+                  onBlur={() => handleBlur("dob")}
                   required
                   error={errors.dob}
                 />
               </div>
             </div>
-            <div className={styles.animateSlideUp}>
+
+            {/* BRANCH & CGPA (Moved above Hostel) */}
+            <div
+              className={`grid md:grid-cols-2 gap-8 ${styles.animateSlideUp}`}
+            >
               <InputField
                 id="branchSpecialization"
                 label="Branch"
                 value={formData.branchSpecialization}
                 onChange={(v) => handleChange("branchSpecialization", v)}
+                onBlur={() => handleBlur("branchSpecialization")}
                 required
-                placeholder="e.g. CSE Core"
+                placeholder="CSE Core"
                 error={errors.branchSpecialization}
               />
-            </div>
-
-            {/* CGPA FIELD */}
-            <div className={styles.animateSlideUp}>
               <InputField
                 id="cgpa"
                 label="CGPA"
                 type="number"
                 value={formData.cgpa}
                 onChange={(v) => handleChange("cgpa", v)}
+                onBlur={() => handleBlur("cgpa")}
                 required
                 placeholder="9.31"
                 error={errors.cgpa}
               />
+            </div>
+
+            {/* HOSTEL DETAILS SUBSECTION */}
+            <div
+              className={`pt-6 border-t border-white/5 ${styles.animateSlideUp}`}
+            >
+              <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                {getHostelHeader()}
+              </h3>
+              <div className="grid grid-cols-2 gap-4 md:gap-8">
+                <InputField
+                  id="hostelBlock"
+                  label="Block"
+                  value={formData.hostelBlock}
+                  onChange={(v) => handleChange("hostelBlock", v)}
+                  onBlur={() => handleBlur("hostelBlock")}
+                  required
+                  placeholder="A"
+                  error={errors.hostelBlock}
+                />
+                <InputField
+                  id="hostelRoom"
+                  label="Room No."
+                  type="number"
+                  value={formData.hostelRoom}
+                  onChange={(v) => handleChange("hostelRoom", v)}
+                  onBlur={() => handleBlur("hostelRoom")}
+                  required
+                  placeholder="101"
+                  error={errors.hostelRoom}
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -465,6 +522,7 @@ export default function FormsPage() {
                 type="select"
                 value={formData.domain}
                 onChange={handleDomainChange}
+                onBlur={() => handleBlur("domain")}
                 required
                 options={["Tech", "Design", "Management"]}
                 error={errors.domain}
@@ -479,6 +537,7 @@ export default function FormsPage() {
                     type="select"
                     value={formData.subDomain}
                     onChange={(v) => handleChange("subDomain", v)}
+                    onBlur={() => handleBlur("subDomain")}
                     required
                     options={
                       domainOptionsMap[
@@ -492,10 +551,11 @@ export default function FormsPage() {
             <div className={styles.animateSlideUp}>
               <InputField
                 id="projects"
-                label="Past Experience in Domain" // UPDATED LABEL
+                label="Past Experience in Domain"
                 type="textarea"
                 value={formData.projects}
                 onChange={(v) => handleChange("projects", v)}
+                onBlur={() => handleBlur("projects")}
                 required
                 placeholder="Describe your role, projects built, or events managed..."
                 error={errors.projects}
@@ -518,8 +578,6 @@ export default function FormsPage() {
           </div>
 
           <div className="space-y-10">
-            {/* REMOVED: Liked Senior Input Field */}
-
             <div
               className={`${styles.animateSlideUp} bg-neutral-900/40 p-8 rounded-4xl border border-white/5`}
             >
@@ -540,6 +598,7 @@ export default function FormsPage() {
                 type="textarea"
                 value={formData.commitmentJustification}
                 onChange={(v) => handleChange("commitmentJustification", v)}
+                onBlur={() => handleBlur("commitmentJustification")}
                 required
                 placeholder="How will you balance your time?"
                 error={errors.commitmentJustification}
