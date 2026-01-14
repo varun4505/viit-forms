@@ -22,18 +22,15 @@ const transporter: Transporter = nodemailer.createTransport({
 // Function to send birthday email to a member
 export async function sendBirthdayEmail(member: Member): Promise<boolean> {
   const mailOptions = {
-    from: `"Core Team" <${process.env.EMAIL_FROM as string}>`,
+    from: `"VinnovateIT" <${process.env.EMAIL_FROM as string}>`,
     to: member.email,
     subject: "🎂 Happy Birthday!",
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
         <h1 style="color: #3b82f6; text-align: center;">Happy Birthday, ${member.name}! 🎉</h1>
         <p style="font-size: 16px; line-height: 1.5;">We hope your day is filled with joy and celebration!</p>
-        <p style="font-size: 16px; line-height: 1.5;">Thank you for being a valuable member of our team.</p>
-        <div style="text-align: center; margin-top: 30px;">
-          <img src="https://via.placeholder.com/300x200?text=Happy+Birthday" alt="Birthday Celebration" style="max-width: 100%; border-radius: 5px;">
-        </div>
-        <p style="font-size: 14px; color: #666; margin-top: 30px; text-align: center;">Best wishes from the entire team!</p>
+        <p style="font-size: 16px; line-height: 1.5;">Thank you for being a valuable member of our club.</p>
+        <p style="font-size: 14px; color: #666; margin-top: 30px; text-align: center;">Best wishes from VinnovateIT!</p>
       </div>
     `,
   };
@@ -58,7 +55,7 @@ export async function sendBoardNotification(member: Member): Promise<boolean> {
   }
 
   const mailOptions = {
-    from: `"Core Team System" <${process.env.EMAIL_FROM as string}>`,
+    from: `" VinnovateIT" <${process.env.EMAIL_FROM as string}>`,
     to: boardEmails.join(","),
     subject: `🎂 Birthday Reminder: ${member.name}`,
     html: `
@@ -73,7 +70,7 @@ export async function sendBoardNotification(member: Member): Promise<boolean> {
           <li><strong>Registration No:</strong> ${member.regNumber || "N/A"}</li>
         </ul>
         <p style="font-size: 16px; line-height: 1.5;">Don't forget to wish them a happy birthday!</p>
-        <p style="font-size: 14px; color: #666; margin-top: 20px;">This is an automated message from the Core Team Member Management System.</p>
+        <p style="font-size: 14px; color: #666; margin-top: 20px;">This is an automated message from VinnovateIT Management System.</p>
       </div>
     `,
   };
