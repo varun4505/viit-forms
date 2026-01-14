@@ -1,0 +1,41 @@
+/* Layout Transitions */
+.panelContainer {
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: width;
+}
+
+.contentContainer {
+  transition: opacity 0.5s ease-in-out, transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animations */
+@keyframes slideUpFade {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animateSlideUp {
+  animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Background Blob */
+.blob {
+  position: absolute;
+  background: white;
+  border-radius: 9999px;
+  filter: blur(120px);
+  opacity: 0.08;
+  transition: all 1s ease-in-out;
+  pointer-events: none;
+}
+
+.blobHome {
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60vh; height: 60vh;
+}
+
+.blobForm {
+  top: 20%; right: -10%;
+  width: 400px; height: 400px;
+}

@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+:root {
+  --background: #e5e5e5;
+  --foreground: #0d0d0d;
+  --primary: #ae8edc;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-jakarta); 
+  --color-primary: var(--primary);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-jakarta), Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+/* --- UTILITIES --- */
+::-webkit-scrollbar { display: none; }
+* { -ms-overflow-style: none; scrollbar-width: none; }
+
+.bg-primary { background-color: var(--primary); }
+.text-primary { color: var(--primary); }
+.border-primary { border-color: var(--primary); }
+.hover\:bg-primary-dark:hover { background-color: #967bbd; }
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUpFade { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
+.animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+.animate-slideUpFade { animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+@layer components {
+  .input-field {
+    @apply w-full bg-black/60 backdrop-blur-sm border border-white/10 text-white px-6 py-4 appearance-none focus:outline-none focus:border-[#ae8edc] focus:ring-2 focus:ring-purple-400/20 transition-all duration-300 rounded-full shadow-lg;
+  }
+  
+  .input-textarea {
+    @apply w-full bg-black/60 backdrop-blur-sm border border-white/10 text-white px-6 py-4 appearance-none focus:outline-none focus:border-[#ae8edc] focus:ring-2 focus:ring-purple-400/20 transition-all duration-300 shadow-lg rounded-4xl resize-none;
+  }
+
+  .btn-primary {
+    @apply bg-[#ae8edc] hover:bg-[#9a7cc5] text-black font-bold text-xl py-4 px-10 rounded-full transition-all duration-300 transform hover:scale-[1.02] shadow-2xl inline-flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95;
+  }
+}
