@@ -14,9 +14,12 @@ export async function POST(req: NextRequest) {
   try {
     await dbConnect();
 
+    // Get current date in IST (UTC+5:30)
     const today = new Date();
-    const month = today.getUTCMonth() + 1; 
-    const day = today.getUTCDate();        
+    const istOffset = 5.5 * 60 * 60 * 1000; 
+    const istDate = new Date(today.getTime() + istOffset);
+    const month = istDate.getUTCMonth() + 1; 
+    const day = istDate.getUTCDate();        
 
     const todaysBirthdays = await Member.find({
       $expr: {
