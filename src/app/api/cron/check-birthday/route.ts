@@ -3,7 +3,7 @@ import dbConnect from "@/lib/dbConnect";
 import Member from "@/models/Members";
 import { sendBirthdayEmail, sendBoardNotification } from "@/lib/mail";
 
-export async function POST(req: NextRequest) {
+async function handleBirthdayCheck(req: NextRequest) {
   if (req.headers.get("x-cron-secret") !== process.env.CRON_SECRET) {
     return NextResponse.json(
       { success: false, message: "Not authorized" },
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
     // Get current date in IST (UTC+5:30)
     const today = new Date();
-    const istOffset = 5.5 * 60 * 60 * 1000; // 5.5 hours in milliseconds
+    const istOffset = 5.5 * 60 * 60 * 1000; 
     const istDate = new Date(today.getTime() + istOffset);
     const month = istDate.getUTCMonth() + 1; 
     const day = istDate.getUTCDate();        
@@ -67,4 +67,13 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// Export both GET and POST handlers for flexibility
+export async function GET(req: NextRequest) {
+  return handleBirthdayCheck(req);
+}
+
+export async function POST(req: NextRequest) {
+  return handleBirthdayCheck(req);
 }
