@@ -22,11 +22,10 @@ async function handleBirthdayCheck(req: NextRequest) {
     console.log('✅ Database connected successfully');
 
     // Get current date in IST (UTC+5:30)
-    const today = new Date();
-    const istOffset = 5.5 * 60 * 60 * 1000; 
-    const istDate = new Date(today.getTime() + istOffset);
-    const month = istDate.getUTCMonth() + 1; 
-    const day = istDate.getUTCDate();        
+    const now = new Date();
+    const istDate = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+    const month = istDate.getMonth() + 1;
+    const day = istDate.getDate();         // Use getDate() instead of getUTCDate()        
 
     console.log(`🗓️ Checking for birthdays on: ${month}/${day}`);
 
