@@ -110,7 +110,6 @@ const FormSubmissionSchema = new Schema<IFormSubmission>({
 });
 
 // Indexes
-FormSubmissionSchema.index({ 'personalInfo.regNumber': 1 }, { unique: true });
 FormSubmissionSchema.index({ 'personalInfo.vitEmail': 1 });
 FormSubmissionSchema.index({ 'domainInfo.domain': 1 });
 FormSubmissionSchema.index({ status: 1 });
