@@ -4,7 +4,13 @@ import Member from "@/models/Members";
 import { sendBirthdayEmail, sendBoardNotification } from "@/lib/mail";
 
 async function handleBirthdayCheck(req: NextRequest) {
-  if (req.headers.get("x-cron-secret") !== process.env.CRON_SECRET) {
+  // Check for Vercel's built-in cron authorization
+  const authHeader = req.headers.get("authorization");
+  const isVercelCron = req.headers.get("user-agent")?.includes("vercel-cron");
+  const cronSecret = req.headers.get("x-cron-secret");
+  
+  // Allow if it's a Vercel cron request OR if manual request with correct secret
+  if (!isVercelCron && cronSecret !== process.env.CRON_SECRET) {
     return NextResponse.json(
       { success: false, message: "Not authorized" },
       { status: 401 }
