@@ -1,4 +1,6 @@
 import nodemailer, { Transporter } from "nodemailer";
+import fs from "fs";
+import path from "path";
 
 interface Member {
   name: string;
@@ -24,7 +26,30 @@ export async function sendBirthdayEmail(member: Member): Promise<boolean> {
   // Randomly select a birthday image
   const birthdayImages = ['1.png', '2.jpeg', '3.jpeg', '4.jpeg', '5.jpeg'];
   const randomImage = birthdayImages[Math.floor(Math.random() * birthdayImages.length)];
-  const imageUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/birthday/${randomImage}`;
+  
+  console.log(`Selected birthday image: ${randomImage}`);
+  
+  // Try to get the image path and create attachment
+  let imageAttachment = null;
+  const imageCid = 'birthday-image';
+  let useAttachment = false;
+  
+  try {
+    const imagePath = path.join(process.cwd(), 'public', 'birthday', randomImage);
+    if (fs.existsSync(imagePath)) {
+      imageAttachment = {
+        filename: randomImage,
+        path: imagePath,
+        cid: imageCid
+      };
+      useAttachment = true;
+      console.log(`Image attachment created for: ${randomImage}`);
+    } else {
+      console.log(`Image not found: ${imagePath}`);
+    }
+  } catch (error) {
+    console.log('Error creating image attachment:', error);
+  }
 
   // Random text variations
   const greetings = [
@@ -70,16 +95,30 @@ export async function sendBirthdayEmail(member: Member): Promise<boolean> {
     to: member.email,
     subject: "🎂 Happy Birthday!",
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-        <div style="text-align: center; margin-bottom: 20px;">
-          <img src="${imageUrl}" alt="Happy Birthday" style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" />
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: white;">
+        ${useAttachment ? 
+          `<div style="text-align: center; margin-bottom: 30px;">
+            <img 
+              src="cid:${imageCid}" 
+              alt="Happy Birthday 🎉" 
+              style="width: 100%; max-width: 600px; height: auto; display: block; border-radius: 0;"
+            />
+          </div>` :
+          `<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 20px; text-align: center; margin-bottom: 30px;">
+            <div style="font-size: 4em; margin-bottom: 15px; line-height: 1;">🎉🎂🎈</div>
+            <h2 style="margin: 0; font-size: 2.5em; font-weight: bold;">Happy Birthday!</h2>
+            <p style="margin: 15px 0 0 0; opacity: 0.95; font-size: 1.2em;">Celebrating You Today</p>
+          </div>`
+        }
+        <div style="padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+          <h1 style="color: #3b82f6; text-align: center; margin-top: 0;">${randomGreeting}</h1>
+          <p style="font-size: 16px; line-height: 1.5;">${randomWish}</p>
+          <p style="font-size: 16px; line-height: 1.5;">${randomAppreciation}</p>
+          <p style="font-size: 14px; color: #666; margin-top: 30px; text-align: center;">${randomClosing}</p>
         </div>
-        <h1 style="color: #3b82f6; text-align: center;">${randomGreeting}</h1>
-        <p style="font-size: 16px; line-height: 1.5;">${randomWish}</p>
-        <p style="font-size: 16px; line-height: 1.5;">${randomAppreciation}</p>
-        <p style="font-size: 14px; color: #666; margin-top: 30px; text-align: center;">${randomClosing}</p>
       </div>
     `,
+    ...(useAttachment && imageAttachment ? { attachments: [imageAttachment] } : {})
   };
 
   try {
@@ -102,7 +141,7 @@ export async function sendBoardNotification(member: Member): Promise<boolean> {
   }
 
   const mailOptions = {
-    from: `" VinnovateIT" <${process.env.EMAIL_FROM as string}>`,
+    from: `"VinnovateIT" <${process.env.EMAIL_FROM as string}>`,
     to: boardEmails.join(","),
     subject: `🎂 Birthday Reminder: ${member.name}`,
     html: `

@@ -5,7 +5,6 @@ import { sendBirthdayEmail, sendBoardNotification } from "@/lib/mail";
 
 async function handleBirthdayCheck(req: NextRequest) {
   // Check for Vercel's built-in cron authorization
-  const authHeader = req.headers.get("authorization");
   const isVercelCron = req.headers.get("user-agent")?.includes("vercel-cron");
   const cronSecret = req.headers.get("x-cron-secret");
   
@@ -18,7 +17,9 @@ async function handleBirthdayCheck(req: NextRequest) {
   }
 
   try {
+    console.log('🔍 Starting birthday check...');
     await dbConnect();
+    console.log('✅ Database connected successfully');
 
     // Get current date in IST (UTC+5:30)
     const today = new Date();
@@ -26,6 +27,8 @@ async function handleBirthdayCheck(req: NextRequest) {
     const istDate = new Date(today.getTime() + istOffset);
     const month = istDate.getUTCMonth() + 1; 
     const day = istDate.getUTCDate();        
+
+    console.log(`🗓️ Checking for birthdays on: ${month}/${day}`);
 
     const todaysBirthdays = await Member.find({
       $expr: {
@@ -40,6 +43,8 @@ async function handleBirthdayCheck(req: NextRequest) {
 
     const emailResults = await Promise.all(
       todaysBirthdays.map(async (member) => {
+        console.log(`📧 Processing birthday for: ${member.personalInfo.name}`);
+        
         // TWEAK: Pass all details required by the updated mail.ts
         const emailData = {
             name: member.personalInfo.name,
@@ -49,26 +54,44 @@ async function handleBirthdayCheck(req: NextRequest) {
             birthdate: member.personalInfo.dob
         };
         
-        return {
-            name: member.personalInfo.name,
-            memberEmailSent: await sendBirthdayEmail(emailData),
-            boardEmailSent: await sendBoardNotification(emailData),
-        };
+        try {
+          const memberEmailSent = await sendBirthdayEmail(emailData);
+          const boardEmailSent = await sendBoardNotification(emailData);
+          
+          return {
+              name: member.personalInfo.name,
+              memberEmailSent,
+              boardEmailSent,
+          };
+        } catch (emailError) {
+          console.error(`❌ Error sending emails for ${member.personalInfo.name}:`, emailError);
+          return {
+              name: member.personalInfo.name,
+              memberEmailSent: false,
+              boardEmailSent: false,
+              error: (emailError as Error).message
+          };
+        }
       })
     );
 
+    console.log('✅ Birthday check completed successfully');
+    
     return NextResponse.json({
       success: true,
       message: "Birthday check completed",
       results: emailResults,
     });
   } catch (error) {
-    console.error("Birthday check error:", error);
+    console.error("❌ Birthday check error:", error);
+    console.error("Error stack:", (error as Error).stack);
+    
     return NextResponse.json(
       {
         success: false,
         message: "Error checking birthdays",
         error: (error as Error).message,
+        stack: (error as Error).stack,
       },
       { status: 500 }
     );
